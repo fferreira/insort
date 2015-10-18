@@ -71,3 +71,8 @@ copies (s n) b = cons b x≤x (copies n b)
 non-sort : ∀{n} -> (v : vec ℕ (s n)) -> ord-vec (s n) (min-vec v)
 non-sort {n} v with min-vec v
 ... | bound = copies (s n) bound
+
+v : vec ℕ 6
+v = 2 :: 3 :: 1 :: 6 :: 4 :: 5 :: []
+
+ov = sort-ordered-vec v
