@@ -1,6 +1,6 @@
 module Sort where
 
-open import Nat renaming (min to minℕ ; compare to compareℕ) hiding (cmp)
+open import Nat renaming (min to minℕ ; compare to compareℕ) hiding (cmpℕ)
 open import Eq
 
 data list (A : Set) : Set where
@@ -12,12 +12,12 @@ infixr 9 _::_
 insert : ℕ -> list ℕ -> list ℕ
 insert x [] = x :: []
 insert x (y :: l) with compareℕ x y
-insert x (y :: l) | leq x≤y = y :: (insert x l)
-insert x (y :: l) | geq y≤x = x :: y :: l
+insert x (y :: l) | leq x≤y = x :: y :: l
+insert x (y :: l) | geq y≤x = y :: insert x l
 
 sort : list ℕ -> list ℕ
 sort [] = []
-sort (x :: l) = insert x l
+sort (x :: l) = insert x (sort l)
 
 --- length preserving
 
@@ -28,12 +28,12 @@ data vec (A : Set) : ℕ -> Set where
 insvec : ∀{n} -> ℕ -> vec ℕ n -> vec ℕ (s n)
 insvec x [] = x :: []
 insvec x (y :: v) with compareℕ x y
-insvec x (y :: v) | leq x≤y = y :: (insvec x v)
-insvec x (y :: v) | geq y≤x = x :: y :: v
+insvec x (y :: v) | leq x≤y = x :: y :: v
+insvec x (y :: v) | geq y≤x = y :: insvec x v
 
 sortvec : ∀{n} -> vec ℕ n -> vec ℕ n
 sortvec [] = []
-sortvec (x :: v) = insvec x v
+sortvec (x :: v) = insvec x (sortvec v)
 
 data _⊎_  (A B : Set) : Set where
   inl : A -> A ⊎ B

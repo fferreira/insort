@@ -24,31 +24,31 @@ module Ord (A : Set) (_≤_ : A -> A -> Set) (compare : ∀ a b -> cmp a b {_≤
   sort [] = []
   sort (x :: l) = insert x (sort l)
 
-  data sorted' : list A -> Set where
-    [] : sorted' []
-    _::[] : ∀ x -> sorted' (x :: [])
-    _::_ : ∀{x y ys} -> x ≤ y -> sorted' (y :: ys) -> sorted' (x :: y :: ys)
+  data ordered' : list A -> Set where
+    [] : ordered' []
+    _::[] : ∀ x -> ordered' (x :: [])
+    _::_ : ∀{x y ys} -> x ≤ y -> ordered' (y :: ys) -> ordered' (x :: y :: ys)
 
-  data _≤sorted_ : A -> list A -> Set where
-    ≤nil : ∀{x} -> x ≤sorted []
-    ≤head : ∀{x y ys} -> x ≤ y {--> x ≤* ys -} -> x ≤sorted (y :: ys)
+  data _≤ordered_ : A -> list A -> Set where
+    ≤nil : ∀{x} -> x ≤ordered []
+    ≤head : ∀{x y ys} -> x ≤ y {--> x ≤* ys -} -> x ≤ordered (y :: ys)
 
-  data sorted : list A -> Set where
-    [] : sorted []
-    _::_ : ∀{x xs} -> x ≤sorted xs -> sorted xs -> sorted (x :: xs)
+  data ordered : list A -> Set where
+    [] : ordered []
+    _::_ : ∀{x xs} -> x ≤ordered xs -> ordered xs -> ordered (x :: xs)
 
-  lemma : ∀{x y l} -> y ≤ x -> y ≤sorted l -> y ≤sorted insert x l
+  lemma : ∀{x y l} -> y ≤ x -> y ≤ordered l -> y ≤ordered insert x l
   lemma y<x ≤nil = ≤head y<x
   lemma {x = x} y<x (≤head {y = y₁} x₁ ) with compare x y₁
   lemma y<x (≤head x₁) | leq x≤y = ≤head y<x
   lemma y<x (≤head x₁ ) | geq y≤x = ≤head x₁ -- x₁ :: (lemma y<x ?)
 
   mutual
-    p : ∀ l -> sorted (sort l)
+    p : ∀ l -> ordered (sort l)
     p [] = []
     p (x :: l) = p' x (sort l) (p l)
 
-    p' : ∀ x l → sorted l -> sorted (insert x l)
+    p' : ∀ x l → ordered l -> ordered (insert x l)
     p' x [] ps = ≤nil :: ps
     p' x (y :: l) ps with compare x y
     p' x (y :: l) (x₁ :: ps) | leq x≤y = (≤head x≤y ) :: (x₁ :: ps)

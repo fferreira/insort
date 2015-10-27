@@ -1,5 +1,6 @@
 module ExSort where
 
+open import Nat renaming (compare to compareℕ)
 open import Eq
 
 data cmp {A : Set} (x y : A) {_≤_ : A -> A -> Set} : Set where
@@ -24,18 +25,18 @@ module Ord (A : Set) (_≤_ : A -> A -> Set) (trans : ∀{x y z} -> x ≤ y -> y
   sort [] = []
   sort (x :: l) = insert x (sort l)
 
-  data sorted' : list A -> Set where
-    [] : sorted' []
-    _::[] : ∀ x -> sorted' (x :: [])
-    _::_ : ∀{x y ys} -> x ≤ y -> sorted' (y :: ys) -> sorted' (x :: y :: ys)
+  -- data ordered' : list A -> Set where
+  --   [] : ordered' []
+  --   _::[] : ∀ x -> ordered' (x :: [])
+  --   _::_ : ∀{x y ys} -> x ≤ y -> ordered' (y :: ys) -> ordered' (x :: y :: ys)
 
   data _≤*_ : A -> list A -> Set where
     [] : ∀{x} -> x ≤* []
     _::_ : ∀{x y ys} -> x ≤ y -> x ≤* ys -> x ≤* (y :: ys)
 
-  data sorted : list A -> Set where
-    [] : sorted []
-    _::_ : ∀{x xs} -> x ≤* xs -> sorted xs -> sorted (x :: xs)
+  data ordered : list A -> Set where
+    [] : ordered []
+    _::_ : ∀{x xs} -> x ≤* xs -> ordered xs -> ordered (x :: xs)
 
   lemma : ∀{x y l} -> y ≤ x -> y ≤* l -> y ≤* insert x l
   lemma y<x [] = y<x :: []
@@ -48,12 +49,26 @@ module Ord (A : Set) (_≤_ : A -> A -> Set) (trans : ∀{x y z} -> x ≤ y -> y
   lemma-1 x<y (x₁ :: y<l) = trans x<y x₁ :: (lemma-1 x<y y<l)
 
   mutual
-    p : ∀ l -> sorted (sort l)
+    p : ∀ l -> ordered (sort l)
     p [] = []
     p (x :: l) = p' x (sort l) (p l)
 
-    p' : ∀ x l → sorted l -> sorted (insert x l)
+    p' : ∀ x l → ordered l -> ordered (insert x l)
     p' x [] ps = [] :: ps
     p' x (y :: l) ps with compare x y
     p' x (y :: l) (x₁ :: ps) | leq x≤y = (x≤y :: lemma-1 x≤y x₁) :: (x₁ :: ps)
     p' x (y :: l) (x₁ :: ps) | geq y≤x = lemma y≤x x₁ :: (p' x l ps)
+
+  len : (l : list A) -> ℕ
+  len [] = z
+  len (_ :: l) = s (len l)
+
+  lemma-2 : ∀{x} l -> s (len l) ≡ len (insert x l)
+  lemma-2 [] = refl
+  lemma-2 {x} (y :: l) with compare x y
+  lemma-2 (y :: l) | leq x≤y = refl
+  lemma-2 (y :: l) | geq y≤x = cong s (lemma-2 l)
+
+  len-p : ∀ l -> len l ≡ len (sort l)
+  len-p [] = refl
+  len-p (x :: l) rewrite len-p l = lemma-2 (sort l)

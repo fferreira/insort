@@ -14,11 +14,15 @@ x≤x : ∀{x} -> x ≤ x
 x≤x {z} = z≤n
 x≤x {s x} = s≤s x≤x
 
-data cmp (x y : ℕ) : Set where
-  leq : (x≤y : x ≤ y) -> cmp x y
-  geq : (y≤x : y ≤ x) -> cmp x y
+trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
+trans z≤n n = z≤n
+trans (s≤s m₂) (s≤s n₁) = s≤s (trans m₂ n₁)
 
-compare : (x y : ℕ) -> cmp x y
+data cmpℕ (x y : ℕ) : Set where
+  leq : (x≤y : x ≤ y) -> cmpℕ x y
+  geq : (y≤x : y ≤ x) -> cmpℕ x y
+
+compare : (x y : ℕ) -> cmpℕ x y
 compare z _ = leq z≤n
 compare (s x) z = geq z≤n
 compare (s x) (s y) with compare x y

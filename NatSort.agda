@@ -1,6 +1,6 @@
 module NatSort where
 
-open import Nat
+open import Nat hiding (compare)
 open import MSort
 
 module M = Ord Nat.ℕ Nat._≤_
