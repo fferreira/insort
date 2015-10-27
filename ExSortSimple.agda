@@ -1,4 +1,4 @@
-module ExSort where
+module ExSortSimple where
 
 open import Eq
 
