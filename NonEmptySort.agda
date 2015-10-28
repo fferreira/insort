@@ -3,40 +3,13 @@ module NonEmptySort where
 open import Nat
 open import Eq
 
--- data list (A : Set) : Set where
---   [] : list A
---   _::_ : A -> list A -> list A
-
 infixr 9 _::_
-
--- insert : ℕ -> list ℕ -> list ℕ
--- insert x [] = x :: []
--- insert x (y :: l) with compare x y
--- insert x (y :: l) | leq x≤y = y :: (insert x l)
--- insert x (y :: l) | geq y≤x = x :: y :: l
-
--- sort : list ℕ -> list ℕ
--- sort [] = []
--- sort (x :: l) = insert x l
-
--- non-sort-list : list ℕ -> list ℕ
--- non-sort-list l = []
 
 --- length preserving
 
 data vec (A : Set) : ℕ -> Set where
   [] : vec A z
   _::_ : ∀{n} -> A -> vec A n -> vec A (s n)
-
--- insvec : ∀{n} -> ℕ -> vec ℕ n -> vec ℕ (s n)
--- insvec x [] = x :: []
--- insvec x (y :: v) with compare x y
--- insvec x (y :: v) | leq x≤y = y :: (insvec x v)
--- insvec x (y :: v) | geq y≤x = x :: y :: v
-
--- sortvec : ∀{n} -> vec ℕ n -> vec ℕ n
--- sortvec [] = []
--- sortvec (x :: v) = insvec x v
 
 --- order preserving
 
