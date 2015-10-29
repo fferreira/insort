@@ -92,10 +92,6 @@ lemma4 : ∀ {x b} → x ≤ b -> minℕ b x ≡ x
 lemma4 {x = z} {b = b} z≤n rewrite lemma35 z b = refl
 lemma4 (s≤s w) = cong s (lemma4 w)
 
-trans : ∀ {x y z} → x ≤ y → y ≤ z → x ≤ z
-trans z≤n n = z≤n
-trans (s≤s m₂) (s≤s n₁) = s≤s (trans m₂ n₁)
-
 lemmaplsstop : ∀ {m n} → (s m) ≤ (s n) → m ≤ n
 lemmaplsstop (s≤s r) = r
 
