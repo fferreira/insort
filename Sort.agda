@@ -35,94 +35,78 @@ sortvec : ∀{n} -> vec ℕ n -> vec ℕ n
 sortvec [] = []
 sortvec (x :: v) = insvec x (sortvec v)
 
-data _⊎_  (A B : Set) : Set where
-  inl : A -> A ⊎ B
-  inr : B -> A ⊎ B
-
-data ⊤ : Set where
-  ⋆ : ⊤
+data _+Inf (A : Set) : Set where
+  val : A -> A +Inf
+  ∞ : A +Inf
 
 -- data ord-list : (bound : ℕ) -> Set where
 --   [] : ∀{b} -> ord-list b
 --   cons : ∀{b} -> (x : ℕ) -> x ≤ b -> ord-list b -> ord-list x
 
-_⊎⊤ : {A : Set} -> (A -> A -> Set) -> A -> (A ⊎ ⊤) -> Set
-_⊎⊤ f x (inl y) = f x y
-_⊎⊤ f x (inr ⋆) = ⊤
+data _≤+_ : ℕ -> ℕ +Inf -> Set where
+  comp : ∀{x y} -> x ≤ y -> x ≤+ (val y)
+  ≤∞ : ∀{x} -> x ≤+ ∞
 
-_≤+_ = _≤_ ⊎⊤
-
-data ord-vec : (n : ℕ) -> (b : ℕ ⊎ ⊤) -> Set where
-  [] : ord-vec z (inr ⋆)
-  cons : ∀{n b} -> (x : ℕ) -> x ≤+ b -> ord-vec n b -> ord-vec (s n) (inl x)
+data ord-vec : (n : ℕ) -> (b : ℕ +Inf) -> Set where
+  [] : ord-vec z ∞
+  cons : ∀{n b} -> (x : ℕ) -> x ≤+ b -> ord-vec n b -> ord-vec (s n) (val x)
 
 to-vec : ∀{n b} -> ord-vec n b -> vec ℕ n
 to-vec [] = []
 to-vec (cons x _ v) = x :: to-vec v
 
-min : ℕ -> (ℕ ⊎ ⊤) -> ℕ
-min x (inl y) = minℕ x y
-min x (inr ⋆) = x
+min : ℕ -> (ℕ +Inf) -> ℕ
+min x (val y) = minℕ x y
+min x ∞ = x
 
-data cmp⊎⊤ (x : ℕ) : (y : ℕ ⊎ ⊤) -> Set where
-  leq : ∀ {y} (x≤y : x ≤+ y) -> cmp⊎⊤ x y
-  geq : ∀ {y} (y≤x : y ≤+ (inl x)) -> cmp⊎⊤ x (inl y)
+data cmp∞ (x : ℕ) : (y : ℕ +Inf) -> Set where
+  leq : ∀ {y} (x≤y : x ≤+ y) -> cmp∞ x y
+  geq : ∀ {y} (y≤x : y ≤+ (val x)) -> cmp∞ x (val y)
 
-compare : (x : ℕ) -> (y : ℕ ⊎ ⊤) -> cmp⊎⊤ x y
-compare x (inl y) with compareℕ x y
-compare x (inl y) | leq x≤y = leq x≤y
-compare x (inl y) | geq y≤x = geq y≤x
-compare x (inr ⋆) = leq ⋆
+compare : (x : ℕ) -> (y : ℕ +Inf) -> cmp∞ x y
+compare x (val y) with compareℕ x y
+compare x (val y) | leq x≤y = leq (comp x≤y)
+compare x (val y) | geq y≤x = geq (comp y≤x)
+compare x ∞ = leq ≤∞
 
-lemma : ∀ {x b} -> b ≤ x → b ≤+ (inl (minℕ x b))
-lemma z≤n = z≤n
-lemma (s≤s w) = s≤s (lemma w)
+lemma-1 : ∀ {x b} → x ≤ b -> minℕ x b ≡ x
+lemma-1 z≤n = refl
+lemma-1 (s≤s w) = cong s (lemma-1 w)
 
-lemma3 : ∀ {x b} → x ≤ b -> minℕ x b ≡ x
-lemma3 z≤n = refl
-lemma3 (s≤s w) = cong s (lemma3 w)
+lemma-2 : ∀ x b → minℕ b x ≡ minℕ x b
+lemma-2 z z = refl
+lemma-2 z (s b) = refl
+lemma-2 (s x) z = refl
+lemma-2 (s x) (s b) = cong s (lemma-2 x b)
 
-lemma35 : ∀ x b → minℕ b x ≡ minℕ x b
-lemma35 z z = refl
-lemma35 z (s b) = refl
-lemma35 (s x) z = refl
-lemma35 (s x) (s b) = cong s (lemma35 x b)
+lemma-3 : ∀ {x b} → x ≤ b -> minℕ b x ≡ x
+lemma-3 {x = z} {b = b} z≤n rewrite lemma-2 z b = refl
+lemma-3 (s≤s w) = cong s (lemma-3 w)
 
-lemma4 : ∀ {x b} → x ≤ b -> minℕ b x ≡ x
-lemma4 {x = z} {b = b} z≤n rewrite lemma35 z b = refl
-lemma4 (s≤s w) = cong s (lemma4 w)
+lemma-4 : ∀ {b x} y → b ≤ x → b ≤+ y → b ≤ min x y
+lemma-4 y z≤n b<y = z≤n
+lemma-4 (val ._) (s≤s b<x) (comp (s≤s x₁)) = s≤s (lemma-4 (val _) b<x (comp x₁))
+lemma-4 ∞ (s≤s b<x) b<y = s≤s b<x
 
-lemmaplsstop : ∀ {m n} → (s m) ≤ (s n) → m ≤ n
-lemmaplsstop (s≤s r) = r
-
-lemma5 : ∀ {b x} y → b ≤ x → b ≤+ y → b ≤ min x y
-lemma5 y z≤n r' = z≤n
-lemma5 (inl z) (s≤s r) r' = r'
-lemma5 (inl (s x)) (s≤s r) r' = s≤s (lemma5 (inl x) r (lemmaplsstop r'))
-lemma5 (inr ⋆) (s≤s r) r' = s≤s r
-
-ins : ∀{n b} -> (x : ℕ) -> ord-vec n b -> ord-vec (s n) (inl (min x b))
-ins x [] = cons x ⋆ []
+ins : ∀{n b} -> (x : ℕ) -> ord-vec n b -> ord-vec (s n) (val (min x b))
+ins x [] = cons x ≤∞ []
 ins x (cons b x₂ v) with compareℕ x b
-ins x (cons b x₂ v) | leq x≤y rewrite lemma3 x≤y = cons x x≤y (cons b x₂ v)
-ins x (cons {b = b'} b x₂ v) | geq y≤x rewrite lemma4 y≤x = cons b (lemma5 b' y≤x x₂) (ins x v)
+ins x (cons b x₂ v) | leq x≤y rewrite lemma-1 x≤y = cons x (comp x≤y) (cons b x₂ v)
+ins x (cons {b = b'} b x₂ v) | geq y≤x rewrite lemma-3 y≤x = cons b (comp (lemma-4 b' y≤x x₂)) (ins x v)
 
 min-vec : ∀{n} -> vec ℕ (s n) -> ℕ
 min-vec (x :: []) = x
 min-vec (x :: x₁ :: v) = minℕ x (min-vec (x₁ :: v))
 
-unary : (x  : ℕ) → ord-vec (s z) (inl x)
-unary x = cons x ⋆ []
-
-sort-ordered-vec : ∀{n} -> (v : vec ℕ (s n)) -> ord-vec (s n) (inl (min-vec v))
-sort-ordered-vec (x :: []) = unary x
+sort-ordered-vec : ∀{n} -> (v : vec ℕ (s n)) -> ord-vec (s n) (val (min-vec v))
+sort-ordered-vec (x :: []) = cons x ≤∞ []
 sort-ordered-vec (x :: x₁ :: v) = ins x (sort-ordered-vec (x₁ :: v))
 
-copies : ∀ n b → ord-vec (s n) (inl b)
-copies z b = cons b ⋆ []
-copies (s n) b = cons b x≤x (copies n b)
+copies : ∀ n b → ord-vec (s n) (val b)
+copies z b = cons b ≤∞ []
+copies (s n) b = cons b (comp x≤x) (copies n b)
 
-non-sort : ∀{n} -> (v : vec ℕ (s n)) -> ord-vec (s n) (inl (min-vec v))
+non-sort : ∀{n} -> (v : vec ℕ (s n)) -> ord-vec (s n) (val (min-vec v))
 non-sort {n} v with min-vec v
 ... | bound = copies n bound
 
