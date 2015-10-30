@@ -7,7 +7,11 @@ data cmp {A : Set} (x y : A) {_≤_ : A -> A -> Set} : Set where
     leq : (x≤y : x ≤ y) -> cmp x y
     geq : (y≤x : y ≤ x) -> cmp x y
 
-module Ord (A : Set) (_≤_ : A -> A -> Set) (trans : ∀{x y z} -> x ≤ y -> y ≤ z -> x ≤ z) (compare : ∀ a b -> cmp a b {_≤_}) where
+module Ord (A : Set)
+  (_≤_ : A -> A -> Set)
+  (trans : ∀{x y z} -> x ≤ y -> y ≤ z -> x ≤ z)
+  (compare : ∀ a b -> cmp a b {_≤_})
+  where
 
   data list (A : Set) : Set where
     [] : list A
@@ -51,13 +55,17 @@ module Ord (A : Set) (_≤_ : A -> A -> Set) (trans : ∀{x y z} -> x ≤ y -> y
   mutual
     p : ∀ l -> ordered (sort l)
     p [] = []
-    p (x :: l) = p' x (sort l) (p l)
+    p (x :: l) = p' x (p l)
 
-    p' : ∀ x l → ordered l -> ordered (insert x l)
-    p' x [] ps = [] :: ps
-    p' x (y :: l) ps with compare x y
-    p' x (y :: l) (x₁ :: ps) | leq x≤y = (x≤y :: lemma-1 x≤y x₁) :: (x₁ :: ps)
-    p' x (y :: l) (x₁ :: ps) | geq y≤x = lemma y≤x x₁ :: (p' x l ps)
+    p' : ∀{l} x → ordered l -> ordered (insert x l)
+    p' x [] = [] :: []
+    p' x (_::_ {y} x₂ ol) with compare x y
+    p' x (x₂ :: ol) | leq x≤y = (x≤y :: (lemma-1 x≤y x₂)) :: (x₂ :: ol)
+    p' x (x₂ :: ol) | geq y≤x = lemma y≤x x₂ :: p' x ol
+    -- p' x [] = [] :: []
+    -- p' {l = y :: foo} x ps with compare x y
+    -- p' x (x₁ :: ps) | leq x≤y = (x≤y :: lemma-1 x≤y x₁) :: (x₁ :: ps)
+    -- p' x (x₁ :: ps) | geq y≤x = lemma y≤x x₁ :: (p' x ps)
 
   len : (l : list A) -> ℕ
   len [] = z

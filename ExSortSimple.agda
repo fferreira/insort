@@ -31,7 +31,7 @@ module Ord (A : Set) (_≤_ : A -> A -> Set) (compare : ∀ a b -> cmp a b {_≤
 
   data _≤ordered_ : A -> list A -> Set where
     ≤nil : ∀{x} -> x ≤ordered []
-    ≤head : ∀{x y ys} -> x ≤ y {--> x ≤* ys -} -> x ≤ordered (y :: ys)
+    ≤head : ∀{x y ys} -> x ≤ y {- -> x ≤* ys -} -> x ≤ordered (y :: ys)
 
   data ordered : list A -> Set where
     [] : ordered []
