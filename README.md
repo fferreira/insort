@@ -1,6 +1,6 @@
 # insort
 
-A repository to keep some experiments with insertion sort on Agda.
+A repository to keep some experiments with insertion sort using Agda.
 
 | File              | Description                                                                               |
 |-------------------|-------------------------------------------------------------------------------------------|
